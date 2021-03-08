@@ -18,6 +18,8 @@ declare module "garmin-connect" {
 
     getActivity({ activityId }: { activityId: string }): Promise<any>;
 
+    getActivitySplits({ activityId }: { activityId: string }): Promise<any>;
+
     getNewsFeed(start?: number, limit?: number): Promise<any>;
 
     downloadOriginalActivityData(

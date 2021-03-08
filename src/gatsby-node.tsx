@@ -1,6 +1,7 @@
 import { GarminConnect } from "garmin-connect";
 import { GatsbyNode, PluginOptions, SourceNodesArgs } from "gatsby";
 import { getActivities } from "./garmin/getActivities";
+import { getActivitySplits } from "./garmin/getActivitySplits";
 import { formatHrId, getHeartRate } from "./garmin/getHeartRate";
 import { formatSleepId, getSleepData } from "./garmin/getSleepData";
 import { formatStepId, getSteps } from "./garmin/getSteps";
@@ -66,6 +67,41 @@ export const sourceNodes: GatsbyNode["sourceNodes"] = async (
         reporter.success(
           `source-garmin: ${activities.length} activities fetched`
         );
+
+        // As a scrappy first pass, the activitySplits implementation
+        // references the cached array of activityIds from activities
+        // To reduce mental overhead, I've nested it in the same if-
+        // block for now, to imply this dependency.
+        if (pluginOptions.endpoints!.indexOf("ActivitySplits") !== -1) {
+          const activitySplits = await getActivitySplits({
+            cache,
+            pluginOptions,
+            reporter,
+            GCClient,
+          });
+
+          if (activitySplits && activitySplits.length > 0) {
+            activitySplits.forEach((activity) => {
+              actions.createNode(
+                {
+                  data: activity,
+                  id: createNodeId(`GarminActivitySplit${activity.activityId}`),
+                  internal: {
+                    type: "GarminActivitySplit",
+                    contentDigest: createContentDigest(activity),
+                  },
+                },
+                {
+                  name: "gatsby-source-garmin",
+                }
+              );
+            });
+
+            reporter.success(
+              `source-garmin: ${activitySplits.length} activity splits fetched`
+            );
+          }
+        }
       }
     }
 
