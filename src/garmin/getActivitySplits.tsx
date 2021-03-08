@@ -68,10 +68,8 @@ export const getActivitySplits = async ({
     }
 
     for (const activityId of activitiesIdsThatNeedSplits) {
-      let splits = await GCClient.getActivitySplits(activityId);
-
+      let splits = await GCClient.getActivitySplits({ activityId });
       await cache.set(`GarminActivitySplit${splits.activityId}`, splits);
-
       activitySplits.push(splits);
 
       await Sleep(2000);

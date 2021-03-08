@@ -101,7 +101,7 @@ var getActivitySplits = function (_a) {
                 case 4:
                     if (!(_b < activitiesIdsThatNeedSplits_1.length)) return [3 /*break*/, 9];
                     activityId = activitiesIdsThatNeedSplits_1[_b];
-                    return [4 /*yield*/, GCClient.getActivitySplits(activityId)];
+                    return [4 /*yield*/, GCClient.getActivitySplits({ activityId: activityId })];
                 case 5:
                     splits = _c.sent();
                     return [4 /*yield*/, cache.set("GarminActivitySplit" + splits.activityId, splits)];
