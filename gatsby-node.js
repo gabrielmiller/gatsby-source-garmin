@@ -53,6 +53,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.sourceNodes = exports.pluginOptionsSchema = void 0;
 var garmin_connect_1 = require("garmin-connect");
 var getActivities_1 = require("./garmin/getActivities");
+var getActivitySplits_1 = require("./garmin/getActivitySplits");
 var getHeartRate_1 = require("./garmin/getHeartRate");
 var getSleepData_1 = require("./garmin/getSleepData");
 var getSteps_1 = require("./garmin/getSteps");
@@ -73,7 +74,7 @@ exports.pluginOptionsSchema = pluginOptionsSchema;
 var sourceNodes = function (_a, pluginOptions) {
     var actions = _a.actions, createNodeId = _a.createNodeId, createContentDigest = _a.createContentDigest, reporter = _a.reporter, cache = _a.cache;
     return __awaiter(void 0, void 0, void 0, function () {
-        var GCClient, activities, steps, hrs, sleepData, e_1;
+        var GCClient, activities, activitySplits, steps, hrs, sleepData, e_1;
         return __generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
@@ -81,11 +82,11 @@ var sourceNodes = function (_a, pluginOptions) {
                     pluginOptions = __assign(__assign({}, GarminPluginOptions_1.defaultGarminPluginOptions), pluginOptions);
                     _b.label = 1;
                 case 1:
-                    _b.trys.push([1, 11, , 12]);
+                    _b.trys.push([1, 12, , 13]);
                     return [4 /*yield*/, GCClient.login(pluginOptions.email, pluginOptions.password)];
                 case 2:
                     _b.sent();
-                    if (!(pluginOptions.endpoints.indexOf("Activities") !== -1)) return [3 /*break*/, 4];
+                    if (!(pluginOptions.endpoints.indexOf("Activities") !== -1)) return [3 /*break*/, 5];
                     return [4 /*yield*/, getActivities_1.getActivities({
                             cache: cache,
                             pluginOptions: pluginOptions,
@@ -94,31 +95,54 @@ var sourceNodes = function (_a, pluginOptions) {
                         })];
                 case 3:
                     activities = _b.sent();
-                    if (activities && activities.length > 0) {
-                        activities.forEach(function (activity) {
+                    if (!(activities && activities.length > 0)) return [3 /*break*/, 5];
+                    activities.forEach(function (activity) {
+                        actions.createNode({
+                            data: activity,
+                            id: createNodeId("GarminActivity" + activity.activityId),
+                            internal: {
+                                type: "GarminActivity",
+                                contentDigest: createContentDigest(activity),
+                            },
+                        }, {
+                            name: "gatsby-source-garmin",
+                        });
+                    });
+                    reporter.success("source-garmin: " + activities.length + " activities fetched");
+                    if (!(pluginOptions.endpoints.indexOf("ActivitySplits") !== -1)) return [3 /*break*/, 5];
+                    return [4 /*yield*/, getActivitySplits_1.getActivitySplits({
+                            cache: cache,
+                            pluginOptions: pluginOptions,
+                            reporter: reporter,
+                            GCClient: GCClient,
+                        })];
+                case 4:
+                    activitySplits = _b.sent();
+                    if (activitySplits && activitySplits.length > 0) {
+                        activitySplits.forEach(function (activity) {
                             actions.createNode({
                                 data: activity,
-                                id: createNodeId("GarminActivity" + activity.activityId),
+                                id: createNodeId("GarminActivitySplit" + activity.activityId),
                                 internal: {
-                                    type: "GarminActivity",
+                                    type: "GarminActivitySplit",
                                     contentDigest: createContentDigest(activity),
                                 },
                             }, {
                                 name: "gatsby-source-garmin",
                             });
                         });
-                        reporter.success("source-garmin: " + activities.length + " activities fetched");
+                        reporter.success("source-garmin: " + activitySplits.length + " activity splits fetched");
                     }
-                    _b.label = 4;
-                case 4:
-                    if (!(pluginOptions.endpoints.indexOf("Steps") !== -1)) return [3 /*break*/, 6];
+                    _b.label = 5;
+                case 5:
+                    if (!(pluginOptions.endpoints.indexOf("Steps") !== -1)) return [3 /*break*/, 7];
                     return [4 /*yield*/, getSteps_1.getSteps({
                             cache: cache,
                             pluginOptions: pluginOptions,
                             reporter: reporter,
                             GCClient: GCClient,
                         })];
-                case 5:
+                case 6:
                     steps = _b.sent();
                     if (steps && steps.length > 0) {
                         steps.forEach(function (step) {
@@ -135,16 +159,16 @@ var sourceNodes = function (_a, pluginOptions) {
                         });
                         reporter.success("source-garmin: " + steps.length + " days of steps fetched");
                     }
-                    _b.label = 6;
-                case 6:
-                    if (!(pluginOptions.endpoints.indexOf("HeartRate") !== -1)) return [3 /*break*/, 8];
+                    _b.label = 7;
+                case 7:
+                    if (!(pluginOptions.endpoints.indexOf("HeartRate") !== -1)) return [3 /*break*/, 9];
                     return [4 /*yield*/, getHeartRate_1.getHeartRate({
                             cache: cache,
                             pluginOptions: pluginOptions,
                             reporter: reporter,
                             GCClient: GCClient,
                         })];
-                case 7:
+                case 8:
                     hrs = _b.sent();
                     if (hrs && hrs.length > 0) {
                         hrs.forEach(function (hr) {
@@ -161,16 +185,16 @@ var sourceNodes = function (_a, pluginOptions) {
                         });
                         reporter.success("source-garmin: " + hrs.length + " days of heart rates fetched");
                     }
-                    _b.label = 8;
-                case 8:
-                    if (!(pluginOptions.endpoints.indexOf("SleepData") !== -1)) return [3 /*break*/, 10];
+                    _b.label = 9;
+                case 9:
+                    if (!(pluginOptions.endpoints.indexOf("SleepData") !== -1)) return [3 /*break*/, 11];
                     return [4 /*yield*/, getSleepData_1.getSleepData({
                             cache: cache,
                             pluginOptions: pluginOptions,
                             reporter: reporter,
                             GCClient: GCClient,
                         })];
-                case 9:
+                case 10:
                     sleepData = _b.sent();
                     if (sleepData && sleepData.length > 0) {
                         sleepData.forEach(function (sleep) {
@@ -187,9 +211,9 @@ var sourceNodes = function (_a, pluginOptions) {
                         });
                         reporter.success("source-garmin: " + sleepData.length + " days of sleep data fetched");
                     }
-                    _b.label = 10;
-                case 10: return [3 /*break*/, 12];
-                case 11:
+                    _b.label = 11;
+                case 11: return [3 /*break*/, 13];
+                case 12:
                     e_1 = _b.sent();
                     if (pluginOptions.debug) {
                         reporter.panic("source-garmin: ", e_1);
@@ -197,8 +221,8 @@ var sourceNodes = function (_a, pluginOptions) {
                     else {
                         reporter.panic("source-garmin: " + e_1.message);
                     }
-                    return [3 /*break*/, 12];
-                case 12: return [2 /*return*/];
+                    return [3 /*break*/, 13];
+                case 13: return [2 /*return*/];
             }
         });
     });

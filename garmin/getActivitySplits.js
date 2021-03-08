@@ -45,84 +45,89 @@ var Sleep_1 = __importDefault(require("../utils/Sleep"));
 var getActivitySplits = function (_a) {
     var cache = _a.cache, pluginOptions = _a.pluginOptions, reporter = _a.reporter, GCClient = _a.GCClient;
     return __awaiter(void 0, void 0, void 0, function () {
-        var activities_1, cachedActivitiesIds, startDate_1, lastFetch, lastFetchDate, limit, start, loadedActivities, validActivities, e_1;
-        return __generator(this, function (_b) {
-            switch (_b.label) {
+        var activitySplits_1, cachedActivitySplitIds, startDate, lastFetch, lastFetchDate, cachedActivitiesIds, activitiesIdsThatNeedSplits, _i, cachedActivitiesIds_1, activityId, _b, activitiesIdsThatNeedSplits_1, activityId, splits, e_1;
+        return __generator(this, function (_c) {
+            switch (_c.label) {
                 case 0:
-                    _b.trys.push([0, 9, , 10]);
-                    activities_1 = [];
-                    return [4 /*yield*/, cache.get("GarminActivitySplits")];
+                    _c.trys.push([0, 12, , 13]);
+                    activitySplits_1 = [];
+                    return [4 /*yield*/, cache.get("GarminActivititySplits")];
                 case 1:
-                    cachedActivitiesIds = (_b.sent()) || [];
-                    if (cachedActivitiesIds.length > 0) {
-                        cachedActivitiesIds.forEach(function (activityId) { return __awaiter(void 0, void 0, void 0, function () {
-                            var cachedActivity;
+                    cachedActivitySplitIds = (_c.sent()) || [];
+                    if (cachedActivitySplitIds.length > 0) {
+                        cachedActivitySplitIds.forEach(function (activityId) { return __awaiter(void 0, void 0, void 0, function () {
+                            var cachedActivitySplit;
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
                                     case 0: return [4 /*yield*/, cache.get("GarminActivitySplit" + activityId)];
                                     case 1:
-                                        cachedActivity = _a.sent();
-                                        activities_1.push(cachedActivity);
+                                        cachedActivitySplit = _a.sent();
+                                        activitySplits_1.push(cachedActivitySplit);
                                         return [2 /*return*/];
                                 }
                             });
                         }); });
                         if (pluginOptions.debug) {
-                            reporter.info("source-garmin: " + cachedActivitiesIds.length + " activity splits restored from cache");
+                            reporter.info("source-garmin: " + cachedActivitySplitIds.length + " activity splits restored from cache");
                         }
                     }
-                    startDate_1 = new Date(pluginOptions.startDate);
+                    startDate = new Date(pluginOptions.startDate);
                     return [4 /*yield*/, cache.get("GarminActivitySplitsLastFetch")];
                 case 2:
-                    lastFetch = _b.sent();
+                    lastFetch = _c.sent();
                     if (lastFetch !== undefined) {
                         lastFetchDate = new Date(lastFetch);
                         // start date before last fetch date
-                        if (compareAsc_1.default(startDate_1, lastFetchDate) === -1) {
-                            startDate_1 = lastFetchDate;
+                        if (compareAsc_1.default(startDate, lastFetchDate) === -1) {
+                            startDate = lastFetchDate;
                         }
                     }
-                    limit = 20;
-                    start = 0;
-                    if (pluginOptions.debug) {
-                        reporter.info("source-garmin: Fetching activity splits since " + startDate_1.toLocaleString());
-                    }
-                    _b.label = 3;
+                    return [4 /*yield*/, cache.get("GarminActivities")];
                 case 3:
-                    if (!true) return [3 /*break*/, 6];
-                    return [4 /*yield*/, GCClient.getActivities(start, limit)];
-                case 4:
-                    loadedActivities = _b.sent();
-                    validActivities = loadedActivities.filter(function (a) { return compareAsc_1.default(startDate_1, new Date(a.beginTimestamp)) !== 1; });
-                    if (validActivities.length === 0) {
-                        // past the start date or no remaining activities
-                        return [3 /*break*/, 6];
-                    }
-                    // add all the activities to the cache
-                    validActivities.forEach(function (a) { return __awaiter(void 0, void 0, void 0, function () { return __generator(this, function (_a) {
-                        switch (_a.label) {
-                            case 0: return [4 /*yield*/, cache.set("GarminActivitySplit" + a.activityId, a)];
-                            case 1: return [2 /*return*/, _a.sent()];
+                    cachedActivitiesIds = (_c.sent()) || [];
+                    activitiesIdsThatNeedSplits = [];
+                    for (_i = 0, cachedActivitiesIds_1 = cachedActivitiesIds; _i < cachedActivitiesIds_1.length; _i++) {
+                        activityId = cachedActivitiesIds_1[_i];
+                        if (cachedActivitySplitIds.indexOf(activityId) !== -1) {
+                            continue;
                         }
-                    }); }); });
-                    if (pluginOptions.debug) {
-                        reporter.info("source-garmin: " + validActivities.length + " activity splits loaded from garmin");
+                        activitiesIdsThatNeedSplits.push(activityId);
                     }
-                    activities_1.push.apply(activities_1, validActivities);
-                    start += limit;
-                    return [4 /*yield*/, Sleep_1.default(2000)];
+                    if (pluginOptions.debug) {
+                        reporter.info("source-garmin: Fetching activity splits since " + startDate.toLocaleString());
+                    }
+                    _b = 0, activitiesIdsThatNeedSplits_1 = activitiesIdsThatNeedSplits;
+                    _c.label = 4;
+                case 4:
+                    if (!(_b < activitiesIdsThatNeedSplits_1.length)) return [3 /*break*/, 9];
+                    activityId = activitiesIdsThatNeedSplits_1[_b];
+                    return [4 /*yield*/, GCClient.getActivitySplits(activityId)];
                 case 5:
-                    _b.sent();
-                    return [3 /*break*/, 3];
-                case 6: return [4 /*yield*/, cache.set("GarminActivitySplits", activities_1.map(function (a) { return a.activityId; }))];
+                    splits = _c.sent();
+                    return [4 /*yield*/, cache.set("GarminActivitySplit" + splits.activityId, splits)];
+                case 6:
+                    _c.sent();
+                    activitySplits_1.push(splits);
+                    return [4 /*yield*/, Sleep_1.default(2000)];
                 case 7:
-                    _b.sent();
-                    return [4 /*yield*/, cache.set("GarminActivitySplitsLastFetch", Date.now())];
+                    _c.sent();
+                    _c.label = 8;
                 case 8:
-                    _b.sent();
-                    return [2 /*return*/, activities_1];
+                    _b++;
+                    return [3 /*break*/, 4];
                 case 9:
-                    e_1 = _b.sent();
+                    if (pluginOptions.debug) {
+                        reporter.info("source-garmin: " + activitiesIdsThatNeedSplits.length + " activities' splits were loaded from garmin");
+                    }
+                    return [4 /*yield*/, cache.set("GarminActivitySplits", activitySplits_1.map(function (a) { return a.activityId; }))];
+                case 10:
+                    _c.sent();
+                    return [4 /*yield*/, cache.set("GarminActivitySplitsLastFetch", Date.now())];
+                case 11:
+                    _c.sent();
+                    return [2 /*return*/, activitySplits_1];
+                case 12:
+                    e_1 = _c.sent();
                     if (pluginOptions.debug) {
                         reporter.panic("source-garmin: ", e_1);
                     }
@@ -130,7 +135,7 @@ var getActivitySplits = function (_a) {
                         reporter.panic("source-garmin: " + e_1.message);
                     }
                     return [2 /*return*/, []];
-                case 10: return [2 /*return*/];
+                case 13: return [2 /*return*/];
             }
         });
     });
